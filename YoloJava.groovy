@@ -15,8 +15,12 @@ import ai.djl.translate.TranslateException;
 
 
 println "Starting Yolo PyTorch Java example"
-String url = "https://github.com/awslabs/djl/raw/master/examples/src/test/resources/dog_bike_car.jpg";
+String url = "https://github.com/CommonWealthRobotics/CommonWealthRobotics.github.io/blob/source/content/img/AndrewHarrington/kickstarterVideoImage-clean.jpeg?raw=true";
 BufferedImage img = BufferedImageUtils.fromUrl(url);
+
+def availibleModels=ModelZoo.listModels();
+println availibleModels
+
 
 Criteria<BufferedImage, DetectedObjects> criteria =
 		Criteria.builder()
