@@ -1,12 +1,3 @@
-@Grab(group='net.java.dev.jna', module='jna', version='5.7.0')
-@Grab(group='com.alphacephei', module='vosk', version='0.3.45')
-@Grab(group='org.openpnp', module='opencv', version='4.7.0-0')
-
-@Grab(group='ai.djl', module='api', version='0.4.0')
-@Grab(group='ai.djl', module='repository', version='0.4.0')
-@Grab(group='ai.djl.pytorch', module='pytorch-model-zoo', version='0.4.0')
-//@Grab(group='ai.djl.pytorch', module='pytorch-native-auto', version='0.4.0')
-
 import java.awt.image.BufferedImage
 
 import ai.djl.Application;
