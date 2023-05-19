@@ -13,6 +13,8 @@ import ai.djl.training.util.ProgressBar;
 import ai.djl.translate.TranslateException;
 
 
+
+println "Starting Yolo PyTorch Java example"
 String url = "https://github.com/awslabs/djl/raw/master/examples/src/test/resources/dog_bike_car.jpg";
 BufferedImage img = BufferedImageUtils.fromUrl(url);
 
@@ -30,5 +32,3 @@ ZooModel<BufferedImage, DetectedObjects> model = ModelZoo.loadModel(criteria)
 Predictor<BufferedImage, DetectedObjects> predictor = model.newPredictor()
 DetectedObjects detection = predictor.predict(img);
 System.out.println(detection);
-
-println "Starting Yolo PyTorch Java example"
