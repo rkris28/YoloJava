@@ -34,6 +34,9 @@ import javafx.scene.image.WritableImage;
 
 import org.opencv.videoio.VideoCapture;
 
+import com.neuronrobotics.bowlerkernel.djl.FaceDetectionTranslator
+import com.neuronrobotics.bowlerkernel.djl.ImagePredictorType
+import com.neuronrobotics.bowlerkernel.djl.PredictorFactory
 import com.neuronrobotics.bowlerstudio.BowlerStudio
 import com.neuronrobotics.bowlerstudio.BowlerStudioController
 import com.neuronrobotics.bowlerstudio.scripting.ScriptingEngine
@@ -61,8 +64,12 @@ import ai.djl.repository.zoo.ModelZoo;
 import ai.djl.repository.zoo.ZooModel;
 import ai.djl.training.util.ProgressBar;
 import ai.djl.translate.TranslateException;
+import ai.djl.modality.cv.Image
+import ai.djl.modality.cv.ImageFactory
 import ai.djl.modality.cv.output.BoundingBox;
 
+import com.neuronrobotics.bowlerkernel.djl.ImagePredictorType;
+import com.neuronrobotics.bowlerkernel.djl.PredictorFactory;
 
 // For proper execution of native libraries
 // Core.NATIVE_LIBRARY_NAME must be loaded before
@@ -85,21 +92,12 @@ faceCascade.load(fileFromGit.getAbsolutePath());
 int absoluteFaceSize=0;
 Tab t =new Tab()
 boolean run = true
-Criteria<BufferedImage, DetectedObjects> criteria =
-		Criteria.builder()
-		.optApplication(Application.CV.OBJECT_DETECTION)
-		.setTypes(BufferedImage.class, DetectedObjects.class)
-		.optFilter("backbone", "resnet50")
-		.optProgress(new ProgressBar())
-		.build();
 
 
-ZooModel<BufferedImage, DetectedObjects> modelPyTorch = ModelZoo.loadModel(criteria)
-
-Predictor<BufferedImage, DetectedObjects> predictor = modelPyTorch.newPredictor()
-
+Predictor<Image, DetectedObjects> predictor = PredictorFactory.imageContentsFactory(ImagePredictorType.yolov5);
+factory=ImageFactory.getInstance()
 while(!Thread.interrupted() && run) {
-	Thread.sleep(16)
+	//Thread.sleep(16)
 	try {
 		// If camera is opened
 		if( capture.isOpened()) {
@@ -136,7 +134,7 @@ while(!Thread.interrupted() && run) {
 				byte[] data = dataBuffer.getData();
 				matrix.get(0, 0, data);
 				
-				DetectedObjects detection = predictor.predict(image);
+				DetectedObjects detection = predictor.predict(factory.fromImage(image));
 				List<DetectedObject> items = detection.items();
 				Rect[] facesArray = new Rect[items.size()];
 				for (int i = 0; i < items.size(); i++) {
@@ -165,7 +163,7 @@ while(!Thread.interrupted() && run) {
 				}
 			}
 		}
-	}catch(Throwable tr) {
+	}catch(Error tr) {
 		BowlerStudio.printStackTrace(tr)
 		break;
 	}

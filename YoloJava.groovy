@@ -15,7 +15,7 @@ import ai.djl.translate.TranslateException;
 
 
 println "Starting Yolo PyTorch Java example"
-String url = "https://github.com/CommonWealthRobotics/CommonWealthRobotics.github.io/blob/source/content/img/AndrewHarrington/kickstarterVideoImage-clean.jpeg?raw=true";
+String url = "https://avatars.githubusercontent.com/u/1254726?v=4";
 BufferedImage img = BufferedImageUtils.fromUrl(url);
 
 def availibleModels=ModelZoo.listModels();
