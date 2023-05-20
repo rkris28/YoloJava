@@ -22,16 +22,8 @@ def availibleModels=ModelZoo.listModels();
 println availibleModels
 
 
-Criteria<BufferedImage, DetectedObjects> criteria =
-		Criteria.builder()
-		.optApplication(Application.CV.OBJECT_DETECTION)
-		.setTypes(BufferedImage.class, DetectedObjects.class)
-		.optFilter("backbone", "resnet50")
-		.optProgress(new ProgressBar())
-		.build();
 
-
-ZooModel<BufferedImage, DetectedObjects> model = ModelZoo.loadModel(criteria)
+ZooModel<BufferedImage, DetectedObjects> model = PredictorFactory.imageContentsFactory(ImagePredictorType.yolov5);
 
 Predictor<BufferedImage, DetectedObjects> predictor = model.newPredictor()
 DetectedObjects detection = predictor.predict(img);

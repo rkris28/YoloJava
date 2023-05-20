@@ -93,8 +93,8 @@ int absoluteFaceSize=0;
 Tab t =new Tab()
 boolean run = true
 
-
-Predictor<Image, DetectedObjects> predictor = PredictorFactory.imageContentsFactory(ImagePredictorType.yolov5);
+ZooModel<Image, DetectedObjects> model  = PredictorFactory.imageContentsFactory(ImagePredictorType.yolov5);
+Predictor<Image, DetectedObjects> predictor =model.newPredictor()
 factory=ImageFactory.getInstance()
 while(!Thread.interrupted() && run) {
 	//Thread.sleep(16)
