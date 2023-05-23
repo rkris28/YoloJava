@@ -51,7 +51,6 @@ import org.opencv.objdetect.CascadeClassifier;
 import org.opencv.objdetect.Objdetect;
 import org.opencv.videoio.VideoCapture;
 
-import ai.djl.Application;
 import ai.djl.MalformedModelException;
 import ai.djl.inference.Predictor;
 import ai.djl.modality.cv.output.DetectedObjects;
@@ -67,9 +66,6 @@ import ai.djl.translate.TranslateException;
 import ai.djl.modality.cv.Image
 import ai.djl.modality.cv.ImageFactory
 import ai.djl.modality.cv.output.BoundingBox;
-
-import com.neuronrobotics.bowlerkernel.djl.ImagePredictorType;
-import com.neuronrobotics.bowlerkernel.djl.PredictorFactory;
 
 // For proper execution of native libraries
 // Core.NATIVE_LIBRARY_NAME must be loaded before
@@ -93,7 +89,7 @@ int absoluteFaceSize=0;
 Tab t =new Tab()
 boolean run = true
 
-ZooModel<Image, DetectedObjects> model  = PredictorFactory.imageContentsFactory(ImagePredictorType.yolov5);
+ZooModel<Image, DetectedObjects> model  = PredictorFactory.imageContentsFactory(ImagePredictorType.ultranet);
 Predictor<Image, DetectedObjects> predictor =model.newPredictor()
 factory=ImageFactory.getInstance()
 while(!Thread.interrupted() && run) {
