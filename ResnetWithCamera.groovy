@@ -109,7 +109,7 @@ while(!Thread.interrupted() && run) {
 				//println "Capture success"
 				// Creating BuffredImage from the matrix
 				BufferedImage image = new BufferedImage(matrix.width(),
-				matrix.height(), BufferedImage.TYPE_3BYTE_BGR);
+						matrix.height(), BufferedImage.TYPE_3BYTE_BGR);
 
 				WritableRaster raster = image.getRaster();
 				DataBufferByte dataBuffer = (DataBufferByte) raster.getDataBuffer();
@@ -119,24 +119,45 @@ while(!Thread.interrupted() && run) {
 				DetectedObjects detection = predictor.predict(factory.fromImage(image));
 				List<DetectedObject> items = detection.items();
 				Rect[] facesArray = new Rect[items.size()];
-				for (int i = 0; i < items.size(); i++) {
-					DetectedObject c = items.get(i);
+				for (int detectionIndex = 0; detectionIndex < items.size(); detectionIndex++) {
+					DetectedObject c = items.get(detectionIndex);
 					BoundingBox cGetBoundingBox = c.getBoundingBox();
 					def topLeft = cGetBoundingBox.getPoint();
 					def rect = cGetBoundingBox.getBounds();
 					Iterator<ai.djl.modality.cv.output.Point> path = cGetBoundingBox.getPath().iterator();
-					List<ai.djl.modality.cv.output.Point> list = new ArrayList<>();
-					for(ai.djl.modality.cv.output.Point p:path)
-						list.add(p)
-					
+					ArrayList<ai.djl.modality.cv.output.Point> list = new ArrayList<>();
+					for(ai.djl.modality.cv.output.Point p:path) {
+						boolean added=false;
+						for(int j=0;j<list.size();j++) {
+							if(p.getY()<list.get(j).getY()) {
+								list.add(j, p);
+								added=true;
+								break;
+							}
+						}
+						if(!added)
+							list.add(p)
+					}
+
+
 					//lm.get
-					facesArray[i]=new Rect(topLeft.getX()*matrix.width(),topLeft.getY()*matrix.height(),rect.getWidth()*matrix.width() ,rect.getHeight()*matrix.height())
+					facesArray[detectionIndex]=new Rect(topLeft.getX()*matrix.width(),topLeft.getY()*matrix.height(),rect.getWidth()*matrix.width() ,rect.getHeight()*matrix.height())
 					System.out.println(c);
 					System.out.println("Name: "+c.getClassName() +" probability "+c.getProbability()+" center x "+topLeft.getX()+" center y "+topLeft.getY()+" rect h"+rect.getHeight()+" rect w"+rect.getWidth() );
-					Imgproc.rectangle(matrix, facesArray[i].tl(), facesArray[i].br(), new Scalar(0, 255, 0), 3);
+					Imgproc.rectangle(matrix, facesArray[detectionIndex].tl(), facesArray[detectionIndex].br(), new Scalar(0, 255, 0), 3);
 					Imgproc.putText(matrix, c.getClassName(), new Point(topLeft.getX()*matrix.width(),topLeft.getY()*matrix.height()-5), 3,1,  new Scalar(0, 255, 0));
-					for(ai.djl.modality.cv.output.Point p:list)
-						Imgproc.circle(matrix, new Point(p.getX(),p.getY()), 3, new Scalar(255, 0, 0))
+					if(list.size()>3) {
+						for(int j=0;j<2;j++) {
+							ai.djl.modality.cv.output.Point p= list.get(j)
+							Imgproc.circle(matrix, new Point(p.getX(),p.getY()), 3, new Scalar(255, 0, 0))
+						}
+						ai.djl.modality.cv.output.Point n= list.get(2)
+						Imgproc.circle(matrix, new Point(n.getX(),n.getY()), 5, new Scalar(0, 0, 255))
+						for(int j=list.size()-2;j<list.size();j++) {
+							ai.djl.modality.cv.output.Point p= list.get(j)
+							Imgproc.circle(matrix, new Point(p.getX(),p.getY()), 3, new Scalar(255, 0, 255))
+						}
+					}
 				}
 				matrix.get(0, 0, data);
 				//println detection
@@ -154,6 +175,8 @@ while(!Thread.interrupted() && run) {
 			}
 		}else {
 			println "Camera failed to open!"
+			
+			throw new RuntimeException("Camera failed!");
 		}
 	}catch(Error tr) {
 		BowlerStudio.printStackTrace(tr)
