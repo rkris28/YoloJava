@@ -22,6 +22,7 @@ import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.CascadeClassifier;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
+import java.awt.image.TileObserver
 import java.awt.image.WritableRaster;
 
 import java.io.FileNotFoundException;
@@ -126,6 +127,7 @@ while(!Thread.interrupted() && run) {
 					def rect = cGetBoundingBox.getBounds();
 					Iterator<ai.djl.modality.cv.output.Point> path = cGetBoundingBox.getPath().iterator();
 					ArrayList<ai.djl.modality.cv.output.Point> list = new ArrayList<>();
+					// sort into an ordered list
 					for(ai.djl.modality.cv.output.Point p:path) {
 						boolean added=false;
 						for(int j=0;j<list.size();j++) {
@@ -136,14 +138,29 @@ while(!Thread.interrupted() && run) {
 							}
 						}
 						if(!added)
-							list.add(p)
+						list.add(p)
 					}
-
-
+					if(list.size()>=5) {
+						double tiltAngle = 0
+						def left = list.get(0)
+						def right=list.get(1)
+						
+						if(left.getY()!=right.getY()) {
+							double y=left.getY()-right.getY()
+							double x=left.getX()-right.getX()
+							tiltAngle=Math.toDegrees(Math.atan2(y, x))
+							if(tiltAngle<-90) {
+								tiltAngle+=180
+							}
+							//println "Tilt angle = "+tiltAngle
+						}else {
+							// angle is 0, they are the same
+						}
+					}
 					//lm.get
 					facesArray[detectionIndex]=new Rect(topLeft.getX()*matrix.width(),topLeft.getY()*matrix.height(),rect.getWidth()*matrix.width() ,rect.getHeight()*matrix.height())
-					System.out.println(c);
-					System.out.println("Name: "+c.getClassName() +" probability "+c.getProbability()+" center x "+topLeft.getX()+" center y "+topLeft.getY()+" rect h"+rect.getHeight()+" rect w"+rect.getWidth() );
+					//System.out.println(c);
+					//System.out.println("Name: "+c.getClassName() +" probability "+c.getProbability()+" center x "+topLeft.getX()+" center y "+topLeft.getY()+" rect h"+rect.getHeight()+" rect w"+rect.getWidth() );
 					Imgproc.rectangle(matrix, facesArray[detectionIndex].tl(), facesArray[detectionIndex].br(), new Scalar(0, 255, 0), 3);
 					Imgproc.putText(matrix, c.getClassName(), new Point(topLeft.getX()*matrix.width(),topLeft.getY()*matrix.height()-5), 3,1,  new Scalar(0, 255, 0));
 					if(list.size()>3) {
@@ -175,7 +192,7 @@ while(!Thread.interrupted() && run) {
 			}
 		}else {
 			println "Camera failed to open!"
-			
+
 			throw new RuntimeException("Camera failed!");
 		}
 	}catch(Error tr) {
