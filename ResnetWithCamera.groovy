@@ -3,11 +3,6 @@ import ai.djl.modality.Classifications.Classification
 @Grab(group='org.openpnp', module='opencv', version='4.7.0-0')
 
 
-
-@Grab(group='ai.djl', module='api', version='0.4.0')
-@Grab(group='ai.djl', module='repository', version='0.4.0')
-@Grab(group='ai.djl.pytorch', module='pytorch-model-zoo', version='0.4.0')
-
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfRect;
