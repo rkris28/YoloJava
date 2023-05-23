@@ -1,4 +1,12 @@
+import ai.djl.inference.Predictor
 import ai.djl.modality.Classifications.Classification
+import ai.djl.modality.cv.Image
+import ai.djl.modality.cv.ImageFactory
+import ai.djl.modality.cv.output.BoundingBox
+import ai.djl.modality.cv.output.DetectedObjects
+import ai.djl.modality.cv.output.DetectedObjects.DetectedObject
+import ai.djl.modality.cv.output.Landmark
+import ai.djl.repository.zoo.ZooModel
 
 @Grab(group='org.openpnp', module='opencv', version='4.7.0-0')
 
@@ -45,23 +53,6 @@ import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.CascadeClassifier;
 import org.opencv.objdetect.Objdetect;
 import org.opencv.videoio.VideoCapture;
-
-import ai.djl.MalformedModelException;
-import ai.djl.inference.Predictor;
-import ai.djl.modality.cv.output.DetectedObjects;
-import ai.djl.modality.cv.output.Rectangle
-import ai.djl.modality.cv.output.DetectedObjects.DetectedObject
-import ai.djl.modality.cv.util.BufferedImageUtils;
-import ai.djl.repository.zoo.Criteria;
-import ai.djl.repository.zoo.ModelNotFoundException;
-import ai.djl.repository.zoo.ModelZoo;
-import ai.djl.repository.zoo.ZooModel;
-import ai.djl.training.util.ProgressBar;
-import ai.djl.translate.TranslateException;
-import ai.djl.modality.cv.Image
-import ai.djl.modality.cv.ImageFactory
-import ai.djl.modality.cv.output.BoundingBox;
-
 // For proper execution of native libraries
 // Core.NATIVE_LIBRARY_NAME must be loaded before
 // calling any of the opencv methods
@@ -118,13 +109,13 @@ while(!Thread.interrupted() && run) {
 				//println "Capture success"
 				// Creating BuffredImage from the matrix
 				BufferedImage image = new BufferedImage(matrix.width(),
-						matrix.height(), BufferedImage.TYPE_3BYTE_BGR);
+				matrix.height(), BufferedImage.TYPE_3BYTE_BGR);
 
 				WritableRaster raster = image.getRaster();
 				DataBufferByte dataBuffer = (DataBufferByte) raster.getDataBuffer();
 				byte[] data = dataBuffer.getData();
 				matrix.get(0, 0, data);
-				
+
 				DetectedObjects detection = predictor.predict(factory.fromImage(image));
 				List<DetectedObject> items = detection.items();
 				Rect[] facesArray = new Rect[items.size()];
@@ -133,11 +124,19 @@ while(!Thread.interrupted() && run) {
 					BoundingBox cGetBoundingBox = c.getBoundingBox();
 					def topLeft = cGetBoundingBox.getPoint();
 					def rect = cGetBoundingBox.getBounds();
+					Iterator<ai.djl.modality.cv.output.Point> path = cGetBoundingBox.getPath().iterator();
+					List<ai.djl.modality.cv.output.Point> list = new ArrayList<>();
+					for(ai.djl.modality.cv.output.Point p:path)
+						list.add(p)
+					
+					//lm.get
 					facesArray[i]=new Rect(topLeft.getX()*matrix.width(),topLeft.getY()*matrix.height(),rect.getWidth()*matrix.width() ,rect.getHeight()*matrix.height())
 					System.out.println(c);
 					System.out.println("Name: "+c.getClassName() +" probability "+c.getProbability()+" center x "+topLeft.getX()+" center y "+topLeft.getY()+" rect h"+rect.getHeight()+" rect w"+rect.getWidth() );
 					Imgproc.rectangle(matrix, facesArray[i].tl(), facesArray[i].br(), new Scalar(0, 255, 0), 3);
 					Imgproc.putText(matrix, c.getClassName(), new Point(topLeft.getX()*matrix.width(),topLeft.getY()*matrix.height()-5), 3,1,  new Scalar(0, 255, 0));
+					for(ai.djl.modality.cv.output.Point p:list)
+						Imgproc.circle(matrix, new Point(p.getX(),p.getY()), 3, new Scalar(255, 0, 0))
 				}
 				matrix.get(0, 0, data);
 				//println detection
@@ -153,6 +152,8 @@ while(!Thread.interrupted() && run) {
 					SwingFXUtils.toFXImage(image, img);
 				}
 			}
+		}else {
+			println "Camera failed to open!"
 		}
 	}catch(Error tr) {
 		BowlerStudio.printStackTrace(tr)
