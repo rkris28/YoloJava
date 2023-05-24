@@ -5,6 +5,7 @@ import ai.djl.modality.cv.ImageFactory
 import ai.djl.modality.cv.output.BoundingBox
 import ai.djl.modality.cv.output.DetectedObjects
 import ai.djl.modality.cv.output.DetectedObjects.DetectedObject
+import ai.djl.pytorch.jni.JniUtils
 import ai.djl.modality.cv.output.Landmark
 import ai.djl.repository.zoo.ZooModel
 
@@ -78,7 +79,58 @@ boolean run = true
 
 ZooModel<Image, DetectedObjects> model  = PredictorFactory.imageContentsFactory(ImagePredictorType.ultranet);
 Predictor<Image, DetectedObjects> predictor =model.newPredictor()
+
+Image factoryFromImage=null
 factory=ImageFactory.getInstance()
+class UniquePerson{
+	String name=""
+	float[] features;
+	String referenceImageLocation;
+}
+ArrayList<UniquePerson> knownPeople =[]
+UniquePerson currentPerson=null
+
+new Thread({
+	try {
+		Predictor<Image, float[]> features = PredictorFactory.faceFeatureFactory()
+		JniUtils.setGraphExecutorOptimize(false);
+		while(!Thread.interrupted() && run) {
+			if(factoryFromImage==null) {
+				Thread.sleep(16)
+				continue;
+			}
+			Image tmp=factoryFromImage
+			//println "Processing new image "
+			float[] id = features.predict(tmp);
+			boolean found=false;
+			for(UniquePerson p:knownPeople) {
+				float result = PredictorFactory.calculSimilarFaceFeature(id, p.features)
+				if (result>0.85) {
+					found=true;
+					currentPerson=p;
+					println "Seeing "+p.name+" "+p.referenceImageLocation
+				}
+			}
+			if(found==false) {
+				UniquePerson p = new UniquePerson();
+				p.features=id;
+				p.name="Person "+knownPeople.size()+1
+				String tmpDirsLocation = System.getProperty("java.io.tmpdir")+"/idFiles/"+p.name+".jpeg";
+				File local = new File(tmpDirsLocation)
+				local.getParentFile().mkdirs();
+				local.createNewFile();
+				tmp.save(new FileOutputStream(local), "jpeg")
+				p.referenceImageLocation=tmpDirsLocation
+				println "New person found! "+tmpDirsLocation
+				knownPeople.add(p)
+			}
+		}
+	}catch(Throwable tr) {
+		BowlerStudio.printStackTrace(tr)
+		run=false;	
+	}
+}).start()
+
 while(!Thread.interrupted() && run) {
 	//Thread.sleep(16)
 	try {
@@ -117,9 +169,16 @@ while(!Thread.interrupted() && run) {
 				byte[] data = dataBuffer.getData();
 				matrix.get(0, 0, data);
 
-				DetectedObjects detection = predictor.predict(factory.fromImage(image));
+				def tmp= factory.fromImage(image)
+				DetectedObjects detection = predictor.predict(tmp);
 				List<DetectedObject> items = detection.items();
 				Rect[] facesArray = new Rect[items.size()];
+				if( items.size()==0) {
+					factoryFromImage=null
+					
+				}else {
+					factoryFromImage=tmp
+				}
 				for (int detectionIndex = 0; detectionIndex < items.size(); detectionIndex++) {
 					DetectedObject c = items.get(detectionIndex);
 					BoundingBox cGetBoundingBox = c.getBoundingBox();
@@ -138,13 +197,13 @@ while(!Thread.interrupted() && run) {
 							}
 						}
 						if(!added)
-						list.add(p)
+							list.add(p)
 					}
 					if(list.size()>=5) {
 						double tiltAngle = 0
 						def left = list.get(0)
 						def right=list.get(1)
-						
+
 						if(left.getY()!=right.getY()) {
 							double y=left.getY()-right.getY()
 							double x=left.getX()-right.getX()
@@ -197,10 +256,12 @@ while(!Thread.interrupted() && run) {
 		}
 	}catch(Error tr) {
 		BowlerStudio.printStackTrace(tr)
+		run=false;
 		break;
 	}
 
 }
+run=false;
 BowlerStudioController.removeObject(t)
 capture.release()
 println "clean exit and closed camera"
