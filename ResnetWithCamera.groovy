@@ -86,6 +86,8 @@ class UniquePerson{
 	String name=""
 	float[] features;
 	String referenceImageLocation;
+	Image memory;
+	int timesSeen = 1;
 }
 ArrayList<UniquePerson> knownPeople =[]
 UniquePerson currentPerson=null
@@ -103,23 +105,33 @@ new Thread({
 			//println "Processing new image "
 			float[] id = features.predict(tmp);
 			boolean found=false;
+			def duplicates =[]
 			for(UniquePerson p:knownPeople) {
 				float result = PredictorFactory.calculSimilarFaceFeature(id, p.features)
 				if (result>0.85) {
-					found=true;
-					currentPerson=p;
-					println "Seeing "+p.name+" "+p.referenceImageLocation
+					if(found) {
+						duplicates.add(p)
+					}else {
+						found=true;
+						currentPerson=p;
+						p.timesSeen++
+						println "Seeing "+p.name+" "+p.timesSeen+" times confidence:"+result
+					}
 				}
+			}
+			for(def d:duplicates) {
+				knownPeople.remove(d)
 			}
 			if(found==false) {
 				UniquePerson p = new UniquePerson();
 				p.features=id;
 				p.name="Person "+knownPeople.size()+1
 				String tmpDirsLocation = System.getProperty("java.io.tmpdir")+"/idFiles/"+p.name+".jpeg";
-				File local = new File(tmpDirsLocation)
-				local.getParentFile().mkdirs();
-				local.createNewFile();
-				tmp.save(new FileOutputStream(local), "jpeg")
+				
+				//File local = new File(tmpDirsLocation)
+				//local.getParentFile().mkdirs();
+				//local.createNewFile();
+				//tmp.save(new FileOutputStream(local), "jpeg")
 				p.referenceImageLocation=tmpDirsLocation
 				println "New person found! "+tmpDirsLocation
 				knownPeople.add(p)
