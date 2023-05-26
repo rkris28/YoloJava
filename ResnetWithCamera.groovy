@@ -222,7 +222,7 @@ new Thread({
 	Predictor<Image, float[]> features = PredictorFactory.faceFeatureFactory()
 	JniUtils.setGraphExecutorOptimize(false);
 	float confidence=0.91
-	long timeout = 3000
+	long timeout = 30000
 	long countPeople=1
 	while(!Thread.interrupted() && run) {
 		try {
