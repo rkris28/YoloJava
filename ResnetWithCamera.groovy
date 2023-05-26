@@ -228,6 +228,7 @@ class UniquePerson{
 	int timesSeen = 1;
 	long time=System.currentTimeMillis()
 	HBox box
+	Label percent
 }
 HashMap<BufferedImage,org.opencv.core.Point> factoryFromImage=null
 HashMap<UniquePerson,org.opencv.core.Point> currentPersons=null
@@ -258,37 +259,48 @@ new Thread({
 				boolean found=false;
 				def duplicates =[]
 
-				for(UniquePerson p:knownPeople) {
+				for(UniquePerson pp:knownPeople) {
+					UniquePerson p=pp
 					int count= 0;
 					//for(int i=0;i<p.features.size();i++) {
-						//float[] featureFloats =p.features.get(i);
-						float result = calculSimilarFaceFeature(id, p.features)
-						println "Difference from "+p.name+" is "+result
-						if (result>confidence) {
-							if(found) {
-								duplicates.add(p)
-							}else {
-								count++;
+					//float[] featureFloats =p.features.get(i);
+					float result = calculSimilarFaceFeature(id, p.features)
+					println "Difference from "+p.name+" is "+result
+					if (result>confidence) {
+						if(found) {
+							duplicates.add(p)
+						}else {
+							count++;
+
+							p.timesSeen++
+							found=true;
+							if(p.timesSeen>2)
+								tmpPersons.put(p, point)
+							if(p.timesSeen==3) {
+								//on the third seen, display
+								WritableImage tmpImg = SwingFXUtils.toFXImage(imgBuff, null);
+								p.box.getChildren().addAll(new ImageView(tmpImg))
+								p.box.getChildren().addAll(new Label(p.name))
+								p.percent=new Label()
+								p.box.getChildren().addAll(p.percent)
+								BowlerStudio.runLater({workingMemory.getChildren().add(p.box)})
+							}
+							p.time=System.currentTimeMillis()
+							//if(result<(confidence+0.01))
+							if(p.features.size()<numberOfTrainingHashes) {
+								p.features.add(id)
+								int percent=(int)(((double)p.features.size())/((double)numberOfTrainingHashes)*100)
+								println "Trained "+percent
+								BowlerStudio.runLater({p.percent.setText(" : Trained "+percent+"%")})
 								
-								p.timesSeen++
-								found=true;
-								if(p.timesSeen>2)
-									tmpPersons.put(p, point)
-								if(p.timesSeen==3) {
-									//on the third seen, display
-									WritableImage tmpImg = SwingFXUtils.toFXImage(imgBuff, null);
-									p.box.getChildren().addAll(new ImageView(tmpImg))
-									p.box.getChildren().addAll(new Label(p.name))
-				
-									BowlerStudio.runLater({workingMemory.getChildren().add(p.box)})
+								if(p.features.size()==numberOfTrainingHashes) {
+									println " Trained "+p.name
+									BowlerStudio.runLater({p.box.getChildren().addAll(new Label(" Done! "))})
+	
 								}
-								p.time=System.currentTimeMillis()
-								if(result<(confidence+0.02))
-									if(p.features.size()<numberOfTrainingHashes) {
-										p.features.add(id)
-									}
 							}
 						}
+					}
 					//}
 				}
 				for(int i=0;i<knownPeople.size();i++) {
