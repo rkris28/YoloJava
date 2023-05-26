@@ -74,6 +74,7 @@ try {
 	BowlerStudio.printStackTrace(t)
 	return
 }
+// Code from https://www.javatpoint.com/real-time-face-recognition-in-java
 //Map<String, float[]> faceDb = new HashMap<>();
 //FaceNetModel faceNetModel = new FaceNetModel("facenet.pb");
 //class FaceNetModel {
@@ -177,14 +178,29 @@ try {
 //	return name;
 //}
 //
-//double calculateDistance(float[] embedding1, float[] embedding2) {
-//	double sum = 0.0;
-//	for (int i = 0; i < embedding1.length; i++) {
-//		sum += Math.pow(embedding1[i] - embedding2[i], 2);
-//	}
-//	return Math.sqrt(sum);
-//}
+double calculateDistance(float[] embedding1, float[] embedding2) {
+	double sum = 0.0;
+	for (int i = 0; i < embedding1.length; i++) {
+		sum += Math.pow(embedding1[i] - embedding2[i], 2);
+	}
+	return Math.sqrt(sum);
+}
 
+public static float calculSimilarFaceFeature(float[] feature1, ArrayList<float[]> people) {
+	float ret = 0.0f;
+	float mod1 = 0.0f;
+	float mod2 = 0.0f;
+	int length = feature1.length;
+	for(int j=0;j<people.size();j++) {
+		float[] feature2 = people.get(j);
+		for (int i = 0; i < length; ++i) {
+			ret += feature1[i] * feature2[i];
+			mod1 += feature1[i] * feature1[i];
+			mod2 += feature2[i] * feature2[i];
+		}
+	}
+	return (float) ((ret / Math.sqrt(mod1) / Math.sqrt(mod2) + 1) / 2.0f);
+}
 
 Mat matrix =new Mat();
 VideoCapture capture = new VideoCapture(0);
@@ -221,9 +237,10 @@ new Thread({
 	ArrayList<UniquePerson> knownPeople =[]
 	Predictor<Image, float[]> features = PredictorFactory.faceFeatureFactory()
 	JniUtils.setGraphExecutorOptimize(false);
-	float confidence=0.91
+	float confidence=0.89
 	long timeout = 30000
 	long countPeople=1
+	int numberOfTrainingHashes =30
 	while(!Thread.interrupted() && run) {
 		try {
 			if(factoryFromImage==null) {
@@ -243,32 +260,40 @@ new Thread({
 
 				for(UniquePerson p:knownPeople) {
 					int count= 0;
-					for(int i=0;i<p.features.size();i++) {
-						float[] featureFloats =p.features.get(i);
-						float result = PredictorFactory.calculSimilarFaceFeature(id, featureFloats)
+					//for(int i=0;i<p.features.size();i++) {
+						//float[] featureFloats =p.features.get(i);
+						float result = calculSimilarFaceFeature(id, p.features)
+						println "Difference from "+p.name+" is "+result
 						if (result>confidence) {
 							if(found) {
 								duplicates.add(p)
 							}else {
 								count++;
-								tmpPersons.put(p, point)
+								
 								p.timesSeen++
+								found=true;
+								if(p.timesSeen>2)
+									tmpPersons.put(p, point)
+								if(p.timesSeen==3) {
+									//on the third seen, display
+									WritableImage tmpImg = SwingFXUtils.toFXImage(imgBuff, null);
+									p.box.getChildren().addAll(new ImageView(tmpImg))
+									p.box.getChildren().addAll(new Label(p.name))
+				
+									BowlerStudio.runLater({workingMemory.getChildren().add(p.box)})
+								}
 								p.time=System.currentTimeMillis()
 								if(result<(confidence+0.02))
-									if(p.features.size()<21) {
+									if(p.features.size()<numberOfTrainingHashes) {
 										p.features.add(id)
 									}
 							}
 						}
-					}
-					if(count>(p.features.size()/3)) {
-						found=true;
-						break;
-					}
+					//}
 				}
 				for(int i=0;i<knownPeople.size();i++) {
 					UniquePerson p = knownPeople.get(i)
-					if((System.currentTimeMillis()-p.time)>timeout) {
+					if((System.currentTimeMillis()-p.time)>timeout&& p.timesSeen<numberOfTrainingHashes) {
 						duplicates.add(p)
 					}
 				}
@@ -284,13 +309,6 @@ new Thread({
 					p.name="Person "+(countPeople++)
 					String tmpDirsLocation = System.getProperty("java.io.tmpdir")+"/idFiles/"+p.name+".jpeg";
 					p.box= new HBox()
-					WritableImage tmpImg = SwingFXUtils.toFXImage(imgBuff, null);
-					p.box.getChildren().addAll(new ImageView(tmpImg))
-					p.box.getChildren().addAll(new Label(p.name))
-
-					BowlerStudio.runLater({workingMemory.getChildren().add(p.box)})
-
-
 					p.referenceImageLocation=tmpDirsLocation
 					println "New person found! "+tmpDirsLocation
 					knownPeople.add(p)
