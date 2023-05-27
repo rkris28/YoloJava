@@ -229,6 +229,7 @@ class UniquePerson{
 	long time=System.currentTimeMillis()
 	HBox box
 	Label percent
+	double confidenceTarget = 0.7
 }
 HashMap<BufferedImage,org.opencv.core.Point> factoryFromImage=null
 HashMap<UniquePerson,org.opencv.core.Point> currentPersons=null
@@ -238,10 +239,10 @@ new Thread({
 	ArrayList<UniquePerson> knownPeople =[]
 	Predictor<Image, float[]> features = PredictorFactory.faceFeatureFactory()
 	JniUtils.setGraphExecutorOptimize(false);
-	float confidence=0.89
+	float confidence=0.91
 	long timeout = 30000
 	long countPeople=1
-	int numberOfTrainingHashes =30
+	int numberOfTrainingHashes =10
 	while(!Thread.interrupted() && run) {
 		try {
 			if(factoryFromImage==null) {
@@ -266,7 +267,7 @@ new Thread({
 					//float[] featureFloats =p.features.get(i);
 					float result = calculSimilarFaceFeature(id, p.features)
 					println "Difference from "+p.name+" is "+result
-					if (result>confidence) {
+					if (result>p.confidenceTarget) {
 						if(found) {
 							duplicates.add(p)
 						}else {
@@ -292,7 +293,7 @@ new Thread({
 								int percent=(int)(((double)p.features.size())/((double)numberOfTrainingHashes)*100)
 								println "Trained "+percent
 								BowlerStudio.runLater({p.percent.setText(" : Trained "+percent+"%")})
-								
+								p.confidenceTarget = confidence;
 								if(p.features.size()==numberOfTrainingHashes) {
 									println " Trained "+p.name
 									BowlerStudio.runLater({p.box.getChildren().addAll(new Label(" Done! "))})
@@ -301,7 +302,6 @@ new Thread({
 							}
 						}
 					}
-					//}
 				}
 				for(int i=0;i<knownPeople.size();i++) {
 					UniquePerson p = knownPeople.get(i)
