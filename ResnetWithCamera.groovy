@@ -239,10 +239,10 @@ new Thread({
 	ArrayList<UniquePerson> knownPeople =[]
 	Predictor<Image, float[]> features = PredictorFactory.faceFeatureFactory()
 	JniUtils.setGraphExecutorOptimize(false);
-	float confidence=0.91
+	float confidence=0.88
 	long timeout = 30000
 	long countPeople=1
-	int numberOfTrainingHashes =10
+	int numberOfTrainingHashes =50
 	while(!Thread.interrupted() && run) {
 		try {
 			if(factoryFromImage==null) {
