@@ -9,7 +9,6 @@ import ai.djl.pytorch.jni.JniUtils
 import ai.djl.modality.cv.output.Landmark
 import ai.djl.repository.zoo.ZooModel
 
-@Grab(group='org.openpnp', module='opencv', version='4.7.0-0')
 //@Grab(group='org.tensorflow', module='tensorflow', version='1.15.0')
 
 import org.opencv.core.Core;
@@ -59,6 +58,7 @@ import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.CascadeClassifier;
 import org.opencv.objdetect.Objdetect;
 import org.opencv.videoio.VideoCapture;
+import com.neuronrobotics.bowlerstudio.opencv.OpenCVManager;
 //import org.tensorflow.Graph;
 //import org.tensorflow.Session;
 //import org.tensorflow.Tensor;
@@ -68,12 +68,7 @@ import org.opencv.videoio.VideoCapture;
 // For proper execution of native libraries
 // Core.NATIVE_LIBRARY_NAME must be loaded before
 // calling any of the opencv methods
-try {
-	nu.pattern.OpenCV.loadLocally()
-}catch(Throwable t) {
-	BowlerStudio.printStackTrace(t)
-	return
-}
+
 // Code from https://www.javatpoint.com/real-time-face-recognition-in-java
 //Map<String, float[]> faceDb = new HashMap<>();
 //FaceNetModel faceNetModel = new FaceNetModel("facenet.pb");
@@ -203,8 +198,7 @@ public static float calculSimilarFaceFeature(float[] feature1, ArrayList<float[]
 }
 
 Mat matrix =new Mat();
-VideoCapture capture = new VideoCapture(0);
-capture.open(0)
+VideoCapture capture = OpenCVManager.get(0).getCapture()
 WritableImage img = null;
 CascadeClassifier faceCascade = new CascadeClassifier();
 //File fileFromGit = ScriptingEngine.fileFromGit("https://github.com/CommonWealthRobotics/harr-cascade-archive.git", "resources/haarcascades/haarcascade_frontalcatface_extended.xml")
