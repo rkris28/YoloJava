@@ -196,9 +196,9 @@ public static float calculSimilarFaceFeature(float[] feature1, ArrayList<float[]
 	}
 	return (float) ((ret / Math.sqrt(mod1) / Math.sqrt(mod2) + 1) / 2.0f);
 }
+VideoCapture capture = OpenCVManager.get(0).getCapture()
 
 Mat matrix =new Mat();
-VideoCapture capture = OpenCVManager.get(0).getCapture()
 WritableImage img = null;
 CascadeClassifier faceCascade = new CascadeClassifier();
 //File fileFromGit = ScriptingEngine.fileFromGit("https://github.com/CommonWealthRobotics/harr-cascade-archive.git", "resources/haarcascades/haarcascade_frontalcatface_extended.xml")
@@ -500,6 +500,6 @@ while(!Thread.interrupted() && run) {
 run=false;
 
 BowlerStudioController.removeObject(t)
-capture.release()
+
 println "clean exit and closed camera"
 
