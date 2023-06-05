@@ -209,8 +209,8 @@ int absoluteFaceSize=0;
 Tab t =new Tab()
 boolean run = true
 VBox workingMemory = new VBox()
-ZooModel<Image, DetectedObjects> model  = PredictorFactory.imageContentsFactory(ImagePredictorType.ultranet);
-Predictor<Image, DetectedObjects> predictor =model.newPredictor()
+//ZooModel<Image, DetectedObjects> model  = PredictorFactory.imageContentsFactory(ImagePredictorType.ultranet);
+Predictor<Image, DetectedObjects> predictor =PredictorFactory.imageContentsFactory(ImagePredictorType.ultranet)
 factory=ImageFactory.getInstance()
 
 
