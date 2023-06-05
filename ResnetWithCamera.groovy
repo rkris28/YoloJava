@@ -68,7 +68,7 @@ double calculateDistance(float[] embedding1, float[] embedding2) {
 	return Math.sqrt(sum);
 }
 
-public static float calculSimilarFaceFeature(float[] feature1, ArrayList<float[]> people) {
+public float calculSimilarFaceFeature(float[] feature1, ArrayList<float[]> people) {
 	float ret = 0.0f;
 	float mod1 = 0.0f;
 	float mod2 = 0.0f;
@@ -203,6 +203,8 @@ new Thread({
 					knownPeople.add(p)
 				}
 			}
+			if(currentPersons!=null)
+				currentPersons.clear()
 			currentPersons=tmpPersons
 		}catch(Throwable tr) {
 			BowlerStudio.printStackTrace(tr)
@@ -273,7 +275,7 @@ while(!Thread.interrupted() && run) {
 						DataBufferByte dataBuffer = (DataBufferByte) raster.getDataBuffer();
 						byte[] data = dataBuffer.getData();
 						image_roi.get(0,0, data);
-
+					
 
 						nameLoc = new Point(topLeft.getX()*matrix.width(),topLeft.getY()*matrix.height()-5)
 						facePlaces.put(image, nameLoc)
@@ -340,6 +342,8 @@ while(!Thread.interrupted() && run) {
 					factoryFromImage=null
 
 				}else {
+					if(factoryFromImage!=null)
+						factoryFromImage.clear()
 					factoryFromImage=facePlaces
 				}
 				if(currentPersons!=null) {
