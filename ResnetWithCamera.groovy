@@ -59,30 +59,11 @@ import org.opencv.objdetect.CascadeClassifier;
 import org.opencv.objdetect.Objdetect;
 import org.opencv.videoio.VideoCapture;
 import com.neuronrobotics.bowlerstudio.opencv.OpenCVManager;
+import com.neuronrobotics.bowlerkernel.djl.UniquePersonFactory;
+import com.neuronrobotics.bowlerkernel.djl.UniquePerson;
 
-double calculateDistance(float[] embedding1, float[] embedding2) {
-	double sum = 0.0;
-	for (int i = 0; i < embedding1.length; i++) {
-		sum += Math.pow(embedding1[i] - embedding2[i], 2);
-	}
-	return Math.sqrt(sum);
-}
+UniquePersonFactory   upf = UniquePersonFactory.get();
 
-public float calculSimilarFaceFeature(float[] feature1, ArrayList<float[]> people) {
-	float ret = 0.0f;
-	float mod1 = 0.0f;
-	float mod2 = 0.0f;
-	int length = feature1.length;
-	for(int j=0;j<people.size();j++) {
-		float[] feature2 = people.get(j);
-		for (int i = 0; i < length; ++i) {
-			ret += feature1[i] * feature2[i];
-			mod1 += feature1[i] * feature1[i];
-			mod2 += feature2[i] * feature2[i];
-		}
-	}
-	return (float) ((ret / Math.sqrt(mod1) / Math.sqrt(mod2) + 1) / 2.0f);
-}
 VideoCapture capture = OpenCVManager.get(0).getCapture()
 
 Mat matrix =new Mat();
@@ -92,127 +73,11 @@ CascadeClassifier faceCascade = new CascadeClassifier();
 int absoluteFaceSize=0;
 Tab t =new Tab()
 boolean run = true
-VBox workingMemory = new VBox()
+VBox workingMemory = upf.getWorkingMemory();
 Predictor<Image, DetectedObjects> predictor =PredictorFactory.imageContentsFactory(ImagePredictorType.ultranet)
 factory=ImageFactory.getInstance()
 
 
-class UniquePerson{
-	String name=""
-	ArrayList<float[]> features=[];
-	String referenceImageLocation;
-	Image memory;
-	int timesSeen = 1;
-	long time=System.currentTimeMillis()
-	HBox box
-	Label percent
-	double confidenceTarget = 0.7
-}
-HashMap<BufferedImage,org.opencv.core.Point> factoryFromImage=null
-HashMap<UniquePerson,org.opencv.core.Point> currentPersons=null
-
-new Thread({
-
-	ArrayList<UniquePerson> knownPeople =[]
-	Predictor<Image, float[]> features = PredictorFactory.faceFeatureFactory()
-	JniUtils.setGraphExecutorOptimize(false);
-	float confidence=0.88
-	long timeout = 30000
-	long countPeople=1
-	int numberOfTrainingHashes =50
-	while(!Thread.interrupted() && run) {
-		try {
-			if(factoryFromImage==null) {
-				Thread.sleep(16)
-				continue;
-			}
-			HashMap<BufferedImage,org.opencv.core.Point> local = new HashMap<>()
-			local.putAll(factoryFromImage)
-			HashMap<UniquePerson,org.opencv.core.Point> tmpPersons = new HashMap<>()
-			for(BufferedImage imgBuff:local.keySet()) {
-				ai.djl.modality.cv.Image cmp= factory.fromImage(imgBuff)
-				def point = local.get(imgBuff);
-				//println "Processing new image "
-				float[] id = features.predict(cmp);
-				boolean found=false;
-				def duplicates =[]
-
-				for(UniquePerson pp:knownPeople) {
-					UniquePerson p=pp
-					int count= 0;
-					//for(int i=0;i<p.features.size();i++) {
-					//float[] featureFloats =p.features.get(i);
-					float result = calculSimilarFaceFeature(id, p.features)
-					println "Difference from "+p.name+" is "+result
-					if (result>p.confidenceTarget) {
-						if(found) {
-							duplicates.add(p)
-						}else {
-							count++;
-
-							p.timesSeen++
-							found=true;
-							if(p.timesSeen>2)
-								tmpPersons.put(p, point)
-							if(p.timesSeen==3) {
-								//on the third seen, display
-								WritableImage tmpImg = SwingFXUtils.toFXImage(imgBuff, null);
-								p.box.getChildren().addAll(new ImageView(tmpImg))
-								p.box.getChildren().addAll(new Label(p.name))
-								p.percent=new Label()
-								p.box.getChildren().addAll(p.percent)
-								BowlerStudio.runLater({workingMemory.getChildren().add(p.box)})
-							}
-							p.time=System.currentTimeMillis()
-							//if(result<(confidence+0.01))
-							if(p.features.size()<numberOfTrainingHashes) {
-								p.features.add(id)
-								int percent=(int)(((double)p.features.size())/((double)numberOfTrainingHashes)*100)
-								println "Trained "+percent
-								BowlerStudio.runLater({p.percent.setText(" : Trained "+percent+"%")})
-								p.confidenceTarget = confidence;
-								if(p.features.size()==numberOfTrainingHashes) {
-									println " Trained "+p.name
-									BowlerStudio.runLater({p.box.getChildren().addAll(new Label(" Done! "))})
-	
-								}
-							}
-						}
-					}
-				}
-				for(int i=0;i<knownPeople.size();i++) {
-					UniquePerson p = knownPeople.get(i)
-					if((System.currentTimeMillis()-p.time)>timeout&& p.timesSeen<numberOfTrainingHashes) {
-						duplicates.add(p)
-					}
-				}
-				for(UniquePerson p:duplicates) {
-					knownPeople.remove(p)
-					BowlerStudio.runLater({workingMemory.getChildren().remove(p.box)})
-					println "Removing "+p.name
-				}
-
-				if(found==false) {
-					UniquePerson p = new UniquePerson();
-					p.features.add(id);
-					p.name="Person "+(countPeople++)
-					String tmpDirsLocation = System.getProperty("java.io.tmpdir")+"/idFiles/"+p.name+".jpeg";
-					p.box= new HBox()
-					p.referenceImageLocation=tmpDirsLocation
-					println "New person found! "+tmpDirsLocation
-					knownPeople.add(p)
-				}
-			}
-			if(currentPersons!=null)
-				currentPersons.clear()
-			currentPersons=tmpPersons
-		}catch(Throwable tr) {
-			BowlerStudio.printStackTrace(tr)
-			//run=false;
-		}
-	}
-
-}).start()
 
 while(!Thread.interrupted() && run) {
 	//Thread.sleep(16)
@@ -275,7 +140,7 @@ while(!Thread.interrupted() && run) {
 						DataBufferByte dataBuffer = (DataBufferByte) raster.getDataBuffer();
 						byte[] data = dataBuffer.getData();
 						image_roi.get(0,0, data);
-					
+
 
 						nameLoc = new Point(topLeft.getX()*matrix.width(),topLeft.getY()*matrix.height()-5)
 						facePlaces.put(image, nameLoc)
@@ -342,17 +207,18 @@ while(!Thread.interrupted() && run) {
 					factoryFromImage=null
 
 				}else {
-					if(factoryFromImage!=null)
-						factoryFromImage.clear()
-					factoryFromImage=facePlaces
+
+					upf.setFactoryFromImage(facePlaces)
 				}
-				if(currentPersons!=null) {
-					HashMap<UniquePerson,org.opencv.core.Point> lhm = new HashMap<>()
-					lhm.putAll(currentPersons)
+
+				HashMap<UniquePerson,org.opencv.core.Point> lhm =  upf.getCurrentPersons()
+				if(lhm!=null) {
 					for(UniquePerson currentPerson:lhm.keySet()) {
 						def p = lhm.get(currentPerson)
 						Imgproc.putText(matrix, currentPerson.name,p , 3,1,  new Scalar(0, 255, 0));
 					}
+					lhm.clear()
+					lhm=null
 				}
 				// Write Matrix wiht image, and detections ovelaid, onto the matrix
 				matrix.get(0, 0, dataFull);
