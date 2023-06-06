@@ -11,15 +11,7 @@ import ai.djl.repository.zoo.ZooModel
 
 //@Grab(group='org.tensorflow', module='tensorflow', version='1.15.0')
 
-import org.opencv.core.Core;
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfRect;
-import org.opencv.core.Point;
-import org.opencv.core.Rect;
-import org.opencv.core.Scalar;
-import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.imgproc.Imgproc;
-import org.opencv.objdetect.CascadeClassifier;
+
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.TileObserver
@@ -49,6 +41,8 @@ import com.neuronrobotics.bowlerstudio.BowlerStudio
 import com.neuronrobotics.bowlerstudio.BowlerStudioController
 import com.neuronrobotics.bowlerstudio.scripting.ScriptingEngine
 
+import org.opencv.core.Core;
+import org.opencv.core.Point;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfRect;
 import org.opencv.core.Rect;
@@ -77,7 +71,7 @@ VBox workingMemory = upf.getWorkingMemory();
 Predictor<Image, DetectedObjects> predictor =PredictorFactory.imageContentsFactory(ImagePredictorType.ultranet)
 factory=ImageFactory.getInstance()
 
-
+//SUniquePersonFactory.setConfidence(0.7);
 
 while(!Thread.interrupted() && run) {
 	//Thread.sleep(16)
