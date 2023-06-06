@@ -67,7 +67,8 @@ CascadeClassifier faceCascade = new CascadeClassifier();
 int absoluteFaceSize=0;
 Tab t =new Tab()
 boolean run = true
-VBox workingMemory = upf.getWorkingMemory();
+VBox workingMemory=new VBox()
+upf.setWorkingMemory(workingMemory);
 Predictor<Image, DetectedObjects> predictor =PredictorFactory.imageContentsFactory(ImagePredictorType.ultranet)
 factory=ImageFactory.getInstance()
 
