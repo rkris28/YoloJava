@@ -122,7 +122,7 @@ while(!Thread.interrupted() && run) {
 				DetectedObjects detection = predictor.predict(tmp);
 				List<DetectedObject> items = detection.items();
 				Rect[] facesArray = new Rect[items.size()];
-				HashMap<BufferedImage,org.opencv.core.Point> facePlaces = new HashMap<>()
+				//HashMap<BufferedImage,org.opencv.core.Point> facePlaces = new HashMap<>()
 
 				for (int detectionIndex = 0; detectionIndex < items.size(); detectionIndex++) {
 
@@ -131,27 +131,6 @@ while(!Thread.interrupted() && run) {
 					ai.djl.modality.cv.output.Point topLeft = cGetBoundingBox.getPoint();
 					ai.djl.modality.cv.output.Rectangle rect = cGetBoundingBox.getBounds();
 					facesArray[detectionIndex]=new Rect(topLeft.getX()*matrix.width(),topLeft.getY()*matrix.height(),rect.getWidth()*matrix.width() ,rect.getHeight()*matrix.height())
-
-					Rect crop =facesArray[detectionIndex]
-					try {
-						Mat image_roi = new Mat(matrix,crop);
-						BufferedImage image = new BufferedImage((int)rect.getWidth()*matrix.width() ,(int)rect.getHeight()*matrix.height(), BufferedImage.TYPE_3BYTE_BGR);
-						WritableRaster raster = image.getRaster();
-						DataBufferByte dataBuffer = (DataBufferByte) raster.getDataBuffer();
-						byte[] data = dataBuffer.getData();
-						image_roi.get(0,0, data);
-
-
-						nameLoc = new Point(topLeft.getX()*matrix.width(),topLeft.getY()*matrix.height()-5)
-						facePlaces.put(image, nameLoc)
-					}catch(Throwable tr) {
-						BowlerStudio.printStackTrace(tr)
-						continue;
-					}
-					// draw the face in the corner
-					//matrix.get(0, 0, data);
-
-
 					Iterator<ai.djl.modality.cv.output.Point> path = cGetBoundingBox.getPath().iterator();
 					ArrayList<ai.djl.modality.cv.output.Point> list = new ArrayList<>();
 					// sort into an ordered list
@@ -167,6 +146,14 @@ while(!Thread.interrupted() && run) {
 						if(!added)
 							list.add(p)
 					}
+					def nose = list.get(3);
+					Rect crop =facesArray[detectionIndex]
+					upf.addFace(matrix,crop,nose)
+					// draw the face in the corner
+					//matrix.get(0, 0, data);
+
+
+
 					if(list.size()>=5) {
 						double tiltAngle = 0
 						def left = list.get(0)
@@ -208,7 +195,7 @@ while(!Thread.interrupted() && run) {
 
 				}else {
 
-					upf.setFactoryFromImage(facePlaces)
+					upf.setProcessFlag()
 				}
 
 				HashMap<UniquePerson,org.opencv.core.Point> lhm =  upf.getCurrentPersons()
