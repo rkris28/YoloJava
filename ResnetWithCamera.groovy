@@ -146,7 +146,7 @@ while(!Thread.interrupted() && run) {
 						if(!added)
 							list.add(p)
 					}
-					def nose = list.get(3);
+					def nose = list.get(2);
 					Rect crop =facesArray[detectionIndex]
 					upf.addFace(matrix,crop,nose)
 					// draw the face in the corner
