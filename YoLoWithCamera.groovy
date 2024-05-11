@@ -8,22 +8,12 @@ import ai.djl.inference.Predictor;
 import ai.djl.modality.cv.Image;
 import ai.djl.modality.cv.ImageFactory;
 import ai.djl.modality.cv.output.DetectedObjects;
-
-
-Predictor<Image, DetectedObjects> predictor = PredictorFactory.imageContentsFactory(ImagePredictorType.yolov5);
-import ai.djl.inference.Predictor
 import ai.djl.modality.Classifications.Classification
-import ai.djl.modality.cv.Image
-import ai.djl.modality.cv.ImageFactory
 import ai.djl.modality.cv.output.BoundingBox
-import ai.djl.modality.cv.output.DetectedObjects
 import ai.djl.modality.cv.output.DetectedObjects.DetectedObject
 import ai.djl.pytorch.jni.JniUtils
 import ai.djl.modality.cv.output.Landmark
 import ai.djl.repository.zoo.ZooModel
-
-//@Grab(group='org.tensorflow', module='tensorflow', version='1.15.0')
-
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
@@ -32,8 +22,6 @@ import java.awt.image.WritableRaster;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Files
-import java.nio.file.Path
 import javafx.application.Application;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Group;
@@ -48,8 +36,6 @@ import javafx.scene.layout.VBox
 import org.opencv.videoio.VideoCapture;
 
 import com.neuronrobotics.bowlerkernel.djl.FaceDetectionTranslator
-import com.neuronrobotics.bowlerkernel.djl.ImagePredictorType
-import com.neuronrobotics.bowlerkernel.djl.PredictorFactory
 import com.neuronrobotics.bowlerstudio.BowlerStudio
 import com.neuronrobotics.bowlerstudio.BowlerStudioController
 import com.neuronrobotics.bowlerstudio.scripting.ScriptingEngine
@@ -64,12 +50,14 @@ import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.CascadeClassifier;
 import org.opencv.objdetect.Objdetect;
-import org.opencv.videoio.VideoCapture;
 import com.neuronrobotics.bowlerstudio.opencv.OpenCVManager;
 import com.neuronrobotics.bowlerkernel.djl.UniquePersonFactory;
 import com.neuronrobotics.bowlerkernel.djl.UniquePerson;
 
-UniquePersonFactory   upf = UniquePersonFactory.get();
+
+Predictor<Image, DetectedObjects> predictor = PredictorFactory.imageContentsFactory(ImagePredictorType.yolov5);
+
+//UniquePersonFactory   upf = UniquePersonFactory.get();
 
 VideoCapture capture = OpenCVManager.get(0).getCapture()
 
@@ -81,8 +69,8 @@ int absoluteFaceSize=0;
 Tab t =new Tab()
 boolean run = true
 VBox workingMemory=new VBox()
-upf.setWorkingMemory(workingMemory);
-actory=ImageFactory.getInstance()
+//upf.setWorkingMemory(workingMemory);
+factory=ImageFactory.getInstance()
 
 //SUniquePersonFactory.setConfidence(0.7);
 
@@ -134,6 +122,7 @@ while(!Thread.interrupted() && run) {
 				for (int detectionIndex = 0; detectionIndex < items.size(); detectionIndex++) {
 
 					DetectedObject c = items.get(detectionIndex);
+					String label= c.getClassName();
 					BoundingBox cGetBoundingBox = c.getBoundingBox();
 					ai.djl.modality.cv.output.Point topLeft = cGetBoundingBox.getPoint();
 					ai.djl.modality.cv.output.Rectangle rect = cGetBoundingBox.getBounds();
@@ -155,7 +144,7 @@ while(!Thread.interrupted() && run) {
 					}
 					def nose = list.get(2);
 					Rect crop =facesArray[detectionIndex]
-					upf.addFace(matrix,crop,nose)
+					//upf.addFace(matrix,crop,nose)
 					// draw the face in the corner
 					//matrix.get(0, 0, data);
 
@@ -183,7 +172,7 @@ while(!Thread.interrupted() && run) {
 					//System.out.println(c);
 					//System.out.println("Name: "+c.getClassName() +" probability "+c.getProbability()+" center x "+topLeft.getX()+" center y "+topLeft.getY()+" rect h"+rect.getHeight()+" rect w"+rect.getWidth() );
 					Imgproc.rectangle(matrix, facesArray[detectionIndex].tl(), facesArray[detectionIndex].br(), new Scalar(0, 255, 0), 3);
-
+					Imgproc.putText(matrix, label,facesArray[detectionIndex].tl() , 3,1,  new Scalar(0, 255, 0));
 					if(list.size()>3) {
 						for(int j=0;j<2;j++) {
 							ai.djl.modality.cv.output.Point p= list.get(j)
@@ -202,18 +191,10 @@ while(!Thread.interrupted() && run) {
 
 				}else {
 
-					upf.setProcessFlag()
+					//upf.setProcessFlag()
 				}
 
-				HashMap<UniquePerson,org.opencv.core.Point> lhm =  upf.getCurrentPersons()
-				if(lhm!=null) {
-					for(UniquePerson currentPerson:lhm.keySet()) {
-						def p = lhm.get(currentPerson)
-						Imgproc.putText(matrix, currentPerson.name,p , 3,1,  new Scalar(0, 255, 0));
-					}
-					lhm.clear()
-					lhm=null
-				}
+
 				// Write Matrix wiht image, and detections ovelaid, onto the matrix
 				matrix.get(0, 0, dataFull);
 				//println detection
