@@ -9,8 +9,6 @@ import ai.djl.pytorch.jni.JniUtils
 import ai.djl.modality.cv.output.Landmark
 import ai.djl.repository.zoo.ZooModel
 
-//@Grab(group='org.tensorflow', module='tensorflow', version='1.15.0')
-
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
