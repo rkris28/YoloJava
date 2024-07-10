@@ -21,7 +21,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:document-units="mm"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="layer2"
      showgrid="false"
      inkscape:showpageshadow="2"
      inkscape:pagecheckerboard="0"
@@ -42,5 +42,27 @@
        id="rect1"
        style="stroke:#000000;stroke-width:0.9375"
        d="M 12.355956 23.131713 L 12.355956 37.499998 L 34.698485 37.499998 L 34.698485 23.131713 L 12.355956 23.131713 z " />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Slice 2">
+    <path
+       sodipodi:type="star"
+       style="fill:#00c600;stroke:#00d700;stroke-width:0.9375;fill-opacity:1;stroke-opacity:1"
+       id="path1"
+       inkscape:flatsided="false"
+       sodipodi:sides="5"
+       sodipodi:cx="35.34483"
+       sodipodi:cy="49.568966"
+       sodipodi:r1="17.064617"
+       sodipodi:r2="8.5323086"
+       sodipodi:arg1="0.067408264"
+       sodipodi:arg2="0.6957268"
+       inkscape:rounded="0"
+       inkscape:randomized="0"
+       d="m 52.370692,50.718391 -10.476564,4.319303 -2.381186,11.079021 -7.345337,-8.629067 -11.272602,1.158964 5.936896,-9.652359 -4.585666,-10.362742 11.01454,2.66358 8.438506,-7.56349 0.870464,11.298542 z"
+       inkscape:transform-center-x="-1.2880177"
+       inkscape:transform-center-y="0.3551922" />
   </g>
 </svg>
