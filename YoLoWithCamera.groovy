@@ -123,6 +123,8 @@ while(!Thread.interrupted() && run) {
 
 					DetectedObject c = items.get(detectionIndex);
 					String label= c.getClassName();
+					if(!label.contains("bottle"))
+						continue;
 					BoundingBox cGetBoundingBox = c.getBoundingBox();
 					ai.djl.modality.cv.output.Point topLeft = cGetBoundingBox.getPoint();
 					ai.djl.modality.cv.output.Rectangle rect = cGetBoundingBox.getBounds();
